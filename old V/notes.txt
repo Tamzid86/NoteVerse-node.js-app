@@ -1,0 +1,11 @@
+------Done-------
+Basic Login, resigtration, logout, forgot password
+google oAuth
+
+-----Need to be done------
+project model
+project creation for each user ( it will be handled as a form)
+file handling
+Email Verfication
+
+
