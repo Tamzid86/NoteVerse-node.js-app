@@ -7,6 +7,8 @@ const flash = require('express-flash')
 const passport = require("passport");
 require("./config/passport")(passport);
 
+//const session = require('express-session');
+
 app.use(flash());
 app.use(
   session({
@@ -15,6 +17,9 @@ app.use(
     saveUninitialized: false,  //we can save empty value
   })
 );
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
 app.use(passport.initialize());
@@ -40,6 +45,10 @@ app.use(cors({
 
 const routes = require("./routes/auth.routes");
 app.use(routes);
+
+const routes2 = require("./routes/note.routes");
+app.use(routes2);
+
 
 const ensureAuthenticated = require("./middlewares/auth.middleware");
 app.get("/welcome", ensureAuthenticated, (req, res) => {

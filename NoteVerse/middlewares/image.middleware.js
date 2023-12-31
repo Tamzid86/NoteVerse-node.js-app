@@ -9,25 +9,28 @@ const fileFilter = (req, file, cb) => {
   } else cb(null, false);
 };
 
-const profileImage = multer.diskStorage({
+const projectImage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads");
+    cb(null, "uploads/images");
   },
   filename: function (req, file, cb) {
     cb(null, uuidv4() + "-" + Date.now() + path.extname(file.originalname));
   },
 });
 
+let uploadProjectImage = multer({ storage: projectImage, fileFilter });
 
 const audioStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads");
+    cb(null, "uploads/audios");
   },
   filename: (req, file, cb) => {
     cb(null, Date.now().toString(16) + "-" + file.originalname + ".mp3");
   },
 });
 
-let   uploadProfileImage = multer({ storage: profileImage, fileFilter });
-const uploadAudioFile =    multer({ storage: audioStorage, preservePath: true,});
-module.exports = { uploadProfileImage, uploadAudioFile };
+const uploadAudioFile = multer({
+  preservePath: true,
+  storage: audioStorage,
+});
+module.exports = { uploadProjectImage, uploadAudioFile };

@@ -36,7 +36,7 @@ app.get('/protected', isLoggedIn, async (req, res) => {
     const userEmail = req.user.emails && req.user.emails.length > 0 ? req.user.emails[0].value : 'Email not available';
     try {
         const existingUser = await User.findOne({ email: userEmail });
-
+        console.log(existingUser);
         if (!existingUser) {
             
             const name = req.user.displayName;
