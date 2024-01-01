@@ -67,7 +67,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to Database!");
+    console.log("Server is running, DB connected successfully");
   })
   .catch((error) => {
     console.log(error);

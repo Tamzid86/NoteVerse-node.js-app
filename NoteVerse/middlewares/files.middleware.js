@@ -1,51 +1,28 @@
-// multiUpload.middleware.js
+// const multer = require("multer");
+// const { v4: uuidv4 } = require("uuid");
+// const path = require("path");
 
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
 
-const uploadDir = './newUploads/';
-const imagesDir = path.join(uploadDir, 'images');
-const audiosDir = path.join(uploadDir, 'audios');
+// const fileStorage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'uploads/files/');
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, uuidv4() + "-" + Date.now() + path.extname(file.originalname));
+//   }
+// });
 
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
+// const allowedFiles = function(req, file, cb) {
+//   if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|mp3|wav)$/)) {
+//     req.fileValidationError = 'type not allowed!';
+//     return cb(new Error('type not allowed!'), false);
+//   }
+//   cb(null, true);
+// };
 
-if (!fs.existsSync(audiosDir)) {
-  fs.mkdirSync(audiosDir, { recursive: true });
-}
+// const uploadFile = multer({
+//   storage: fileStorage,
+//   fileFilter: allowedFiles  
+// });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    let uploadPath = uploadDir;
-    if (file.mimetype.startsWith('image/')) {
-      uploadPath = imagesDir;
-    } else if (file.mimetype.startsWith('audio/')) {
-      uploadPath = audiosDir;
-    }
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, new Date().toISOString() + file.originalname);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  // accept image and audio files only
-  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('audio/')) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-});
-
-exports.uploadMultipleFiles = upload.fields([
-  { name: 'images', maxCount: 5 },
-  { name: 'audios', maxCount: 5 },
-]);
+// module.exports = uploadFile;

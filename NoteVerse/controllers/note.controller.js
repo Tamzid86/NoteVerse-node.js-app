@@ -1,37 +1,6 @@
 const Note  = require("../dataModels/Note.model");
 
 
-//  const postNote = async (req, res) => {
-//     const { title} = req.body;
-//     //const user_id = req.user._id
-//     const user_id = req.user._id
-//     const errors = [];
-//     if (!title) {
-//         errors.push("Title is required!");
-//     }
-
-//     if (errors.length > 0) {
-//         res.status(400).json({ error: errors });
-//     } else {
-//         const newNote = new Note({
-//             user_id,
-//             title,   
-//         });
-//         console.log(newNote);
-//         newNote
-//             .save()
-//             .then(() => {
-//                 res.status(201).json({ message: "Note created!" });
-//             })
-//             .catch(() => {
-//                 errors.push("Please try again");
-//                 res.status(400).json({ error: errors });
-//             });
-//     }
-// };
- 
-
-
 const deleteNote = async (req, res) => {
     try {
       const noteinfo = await Note.findByIdAndRemove(req.params.id);
@@ -47,7 +16,65 @@ const deleteNote = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+
+  const deleteText = async (req, res) => {
+    try {
+      const note = await Note.findByIdAndUpdate(
+        req.params.id,
+        { text: "" }, 
+        { new: true } 
+      );
   
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+  
+      res.json({ message: "Text deleted successfully", note });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  const deleteImages = async (req, res) => {
+    try {
+      const note = await Note.findByIdAndUpdate(
+        req.params.id,
+        { images: [] }, // Set the images field to an empty array
+        { new: true } // This option returns the updated document
+      );
+  
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+  
+      res.json({ message: "Images deleted successfully", note });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  const deleteAudios = async (req, res) => {
+    try {
+      const note = await Note.findByIdAndUpdate(
+        req.params.id,
+        { audio: [] }, 
+        { new: true }
+      );
+
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+
+      res.json({ message: "Audios deleted successfully", note });
+    }
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+
+
+
 
 const postImages = async (req, res) => {
     try {
@@ -145,7 +172,6 @@ const updateAudios = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   }
-// now i want to implement a similar type of functions for images which name will be updateImages where my previous images will be removed and new ones will be added just like the updateAudios function.
 
   const updateImages = async (req, res) => {
     try {
@@ -170,7 +196,6 @@ const updateAudios = async (req, res) => {
     }
   }
 
-//now i want to update the text of the note which will be done by the updateText function where the previous text will be removed and new text will be added.
 
 const updateText = async (req, res) => {
     try {
@@ -191,15 +216,35 @@ const updateText = async (req, res) => {
     }
   };
 
+const updateTitle = async (req, res) => {
+    try {
+      const { title } = req.body;
+      const noteId = req.params.id;
+      const note = await Note.findById(noteId);
+  
+      if (!note) {
+        return res.status(404).json({ message: "Note not found!" });
+      }
+  
+      note.title = title;
+  
+      await note.save();
+      res.json({ message: "Title updated!" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
 
 module.exports={
-    //postNote,
-    //getNotes,
     postImages,
     deleteNote,
+    deleteText,
+    deleteAudios,
+    deleteImages,
     postAudios,
     postText,
     updateAudios,
     updateImages,
-    updateText
+    updateText,
+    updateTitle
 };

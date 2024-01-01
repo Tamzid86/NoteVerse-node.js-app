@@ -6,6 +6,32 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const nodemailer = require("nodemailer");
 const crypto = require('crypto');
+
+/*oauth*/
+const GoogleStrategy = require( 'passport-google-oauth2' ).Strategy;
+
+passport.use(new GoogleStrategy({
+    clientID:     '484028685400-8makjt8qe9f9gesp2cejl3be5eing96v.apps.googleusercontent.com',
+    clientSecret: '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',
+    callbackURL: "http://localhost:3000/google/callback",
+    passReqToCallback   : true
+  },
+  function(request, accessToken, refreshToken, profile, done) {
+    return done(null, profile);
+  }
+));
+
+passport.serializeUser(function(user,done){
+    done(null, user);
+});
+
+passport.deserializeUser(function(user,done){
+    done(null, user);
+});
+
+
+
+
 const getLogin = async (req, res) => {
   const filePath = path.join(__dirname, "..", "views", "login.html");
   res.sendFile(filePath);
@@ -35,6 +61,10 @@ const getNotes = async (req, res, next) => {
   const userId = req.user._id
    try {
     const note = await Note.find({user_id: userId});
+    if(note.length === 0)
+    {
+      return res.status(404).json({ error: "User doesn't have any notes" });
+    }
     res.json(note);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -105,29 +135,7 @@ if (errors.length > 0) {
 }
 };
 
-// const forgotPassword = async (req, res) => {
-//   const { email, newPassword } = req.body;
-  
-//   try {
-//     const { email, password } = req.body;
-//     if (!email || !password) {
-//         return res.status(400).send({ message: "Both email and password are required" });
-//     }
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//         return res.status(404).send({ message: "User with this email does not exist" });
-//     }
-//     const salt = await bcrypt.genSalt(Number(process.env.SALT));
-//     const hashPassword = await bcrypt.hash(password, salt);
-//     user.password = hashPassword;
-//     await user.save();
-//     res.status(200).send({ message: "Password updated successfully" });
-    
-// } catch (error) {
-//     console.error(error);
-//     res.status(500).send({ message: "Internal Server Error" });
-// }
-// };
+
 
 const postNote = async (req, res) => {
   const { title} = req.body;
@@ -158,35 +166,89 @@ const postNote = async (req, res) => {
   }
 };
 
+// const postNoteWithFiles = async (req, res) => {
+//   const { title, text } = req.body;
+//   const user_id = req.user._id;
+
+//   const errors = [];
+//   if (!title) {
+//     errors.push("Title is required!");
+//   }
+
+//   if (errors.length > 0) {
+//     res.status(400).json({ error: errors });
+//   } else {
+//     const newNote = new Note({
+//       user_id,
+//       title,
+//       text,
+//       images: req.files['images'] ? req.files['images'].map(file => file.path) : [],
+//       audios: req.files['audios'] ? req.files['audios'].map(file => file.path) : [],
+//     });
+
+//     newNote
+//       .save()
+//       .then(() => {
+//         res.status(201).json({ message: "Note created!" });
+//       })
+//       .catch(() => {
+//         errors.push("Please try again");
+//         res.status(400).json({ error: errors });
+//       });
+//   }
+// };
+
 const postNoteWithFiles = async (req, res) => {
-  const { title, text } = req.body;
-  const user_id = req.user._id;
+  try {
+    if (!req.files) {
+      return res.status(400).json({ error: 'File field is required' });
+    }
 
-  const errors = [];
-  if (!title) {
-    errors.push("Title is required!");
-  }
+    const { title, text } = req.body;
+    const user_id = req.user._id;
 
-  if (errors.length > 0) {
-    res.status(400).json({ error: errors });
-  } else {
+    const files = req.files;
+    const newImageFiles = [];
+    const newAudioFiles = [];
+
+    const errors = [];
+    if (!title ) {
+      errors.push("Title is required!");
+      return res.status(400).json({ error: errors });
+    }
+
+    files.forEach((file) => {
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+        newImageFiles.push(file.filename);
+      } else if (['mp3', 'wav'].includes(fileExtension)) {
+        newAudioFiles.push(file.filename);
+      }
+    });
+
     const newNote = new Note({
       user_id,
       title,
       text,
-      images: req.files['images'] ? req.files['images'].map(file => file.path) : [],
-      audios: req.files['audios'] ? req.files['audios'].map(file => file.path) : [],
+      images: newImageFiles,
+      audios: newAudioFiles,
     });
 
-    newNote
-      .save()
-      .then(() => {
-        res.status(201).json({ message: "Note created!" });
-      })
-      .catch(() => {
-        errors.push("Please try again");
-        res.status(400).json({ error: errors });
-      });
+    await newNote.save();
+
+    res.json({ message: 'Note created successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const deleteUserNotes = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    await Note.deleteMany({ user_id: userId });
+
+    res.json({ message: "User's notes deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -283,7 +345,6 @@ module.exports = {
   postLogin,
   postRegister,
   getRegister,
-  //forgotPassword,
   getNotes,
   postNoteWithFiles,
   postNote,
@@ -291,5 +352,6 @@ module.exports = {
   getPassReset,
   forgotpassword,
   getForgotPass,
+  deleteUserNotes,
 };
 
