@@ -26,7 +26,7 @@ passport.authenticate('google', {scope: ['email', 'profile']}))
 
 app.get('/google/callback',
     passport.authenticate('google',{
-        successRedirect: '/protected',
+        successRedirect: '/welcome',
         failureRedirect: '/auth/failure',
     }));
 
@@ -34,7 +34,7 @@ app.get('/auth/failure', (req,res)=>{
     res.send('Error!!!')
 });
 
-app.get('/protected', isLoggedIn, async (req, res) => {
+app.get('/welcome', isLoggedIn, async (req, res) => {
     const userEmail = req.user.emails && req.user.emails.length > 0 ? req.user.emails[0].value : 'Email not available';
     try {
         const existingUser = await User.findOne({ email: userEmail });

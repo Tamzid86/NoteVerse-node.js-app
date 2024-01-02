@@ -16,7 +16,6 @@ router.get("/login", getLogin);
 router.post("/login", postLogin);
 router.get("/register", getRegister);
 router.post("/register", postRegister);
-//router.post("/forgotpassword",forgotPassword)
 router.get('/forgotpassword', getForgotPass);
 router.post('/forgotpassword', forgotpassword);
 router.get('/passreset', getPassReset);

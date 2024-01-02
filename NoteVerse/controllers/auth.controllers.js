@@ -252,6 +252,8 @@ const deleteUserNotes = async (req, res) => {
   }
 };
 
+
+
 /*forget password?*/
 var transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
